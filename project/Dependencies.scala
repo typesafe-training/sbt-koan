@@ -1,18 +1,16 @@
 import sbt._
 
 object Version {
-  val scala     = "2.10.3"
-  val akka      = "2.2.3"
-  val logback   = "1.0.13"
+  // val scala     = "2.10.3"
+  val commonsIO = "2.4"
+  val jGit      = "3.1.0.201310021548-r"
   val scalaTest = "2.0"
 }
 
 object Library {
-  val akkaActor      = "com.typesafe.akka" %% "akka-actor"      % Version.akka
-  val akkaSlf4j      = "com.typesafe.akka" %% "akka-slf4j"      % Version.akka
-  val akkaTestkit    = "com.typesafe.akka" %% "akka-testkit"    % Version.akka
-  val logbackClassic = "ch.qos.logback"    %  "logback-classic" % Version.logback
-  val scalaTest      = "org.scalatest"     %% "scalatest"       % Version.scalaTest
+  val commonsIO = "commons-io"       % "commons-io"       % Version.commonsIO
+  val jGit      = "org.eclipse.jgit" % "org.eclipse.jgit" % Version.jGit
+  val scalaTest = "org.scalatest"    %% "scalatest"       % Version.scalaTest
 }
 
 object Dependencies {
@@ -20,6 +18,8 @@ object Dependencies {
   import Library._
 
   val sbtKoan = List(
+    commonsIO,
+    jGit,
     scalaTest % "test"
   )
 }

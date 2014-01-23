@@ -2,9 +2,9 @@ organization := "com.typesafe.sbt"
 
 name := "sbt-koan"
 
-version := "0.1.0"
+// version in version.sbt for sbt-release
 
-scalaVersion := Version.scala
+// scalaVersion := Version.scala
 
 libraryDependencies ++= Dependencies.sbtKoan
 
@@ -16,8 +16,14 @@ scalacOptions ++= List(
   "-unchecked",
   "-deprecation",
   "-language:_",
-  "-target:jvm-1.7",
+  "-target:jvm-1.6",
   "-encoding", "UTF-8"
 )
 
-initialCommands := "import com.typesafe.sbt.sbtkoan._"
+initialCommands := "import com.typesafe.sbt.koan._"
+
+sbtPlugin := true
+
+publishTo := Some(if (isSnapshot.value) Classpaths.sbtPluginSnapshots else Classpaths.sbtPluginReleases)
+
+publishMavenStyle := false

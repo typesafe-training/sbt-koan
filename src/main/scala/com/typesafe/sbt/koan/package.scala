@@ -16,7 +16,7 @@
 
 package com.typesafe.sbt
 
-package object sbtkoan {
+package object koan {
 
   type Traversable[+A] = scala.collection.immutable.Traversable[A]
 
