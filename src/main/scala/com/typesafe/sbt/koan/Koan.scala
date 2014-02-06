@@ -25,18 +25,18 @@ private object Koan {
   val buildDefinition = """.+sbt|project/.+\.scala""".r
 
   object Action {
-    def apply(baseDirectory: File, initialState: String, state: State) =
-      new Action(baseDirectory, initialState, state)
+    def apply(baseDirectory: File, initial: String, ignore: String, state: State) =
+      new Action(baseDirectory, initial, ignore, state)
   }
 
-  class Action(baseDirectory: File, initialState: String, state: State) {
+  class Action(baseDirectory: File, initial: String, ignore: String, state: State) {
 
     val git = Git(baseDirectory)
 
     val (koans, koanMessages) = {
-      val koans = git.history("master").reverse dropWhile { case (_, message) => message != initialState }
+      val koans = git.history("master").reverse dropWhile { case (_, message) => !(message contains initial) }
       if (koans.isEmpty)
-        sys.error(s"Fatal: Initial state '$initialState' not in Git history!")
+        sys.error(s"Fatal: Initial state not in Git history, i.e. no commit contains '$initial'!")
       else
         (koans map fst, koans.toMap)
     }
@@ -54,7 +54,7 @@ private object Koan {
 
     def move(forward: Boolean) = {
       val otherQualifier = if (forward) "next" else "previous"
-      (if (forward) koans else koans.reverse) dropWhile (_ != current) match {
+      (if (forward) koans else koans.reverse) dropWhile (_ != current) filterNot (koanMessages(_) contains ignore) match {
         case Nil =>
           state.log.error(s"Can't move to $otherQualifier koan, because invalid current id '$current'!")
           state.log.error(s"Hint: Try to delete ${koanProperties.getCanonicalPath} and preferably run `git clean -df`")

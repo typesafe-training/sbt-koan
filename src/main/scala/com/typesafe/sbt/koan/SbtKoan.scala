@@ -23,10 +23,16 @@ object SbtKoan extends Plugin {
 
   object KoanKeys {
 
-    val initialState: SettingKey[String] =
+    val initial: SettingKey[String] =
       SettingKey[String](
-        prefixed("initialState"),
-        """The message of the commit representing the initial state; "Initial state" by default"""
+        prefixed("initial"),
+        """If a commit message contains this text, the commit is treated as the initial state; "koan:initial" by default"""
+      )
+
+    val ignore: SettingKey[String] =
+      SettingKey[String](
+        prefixed("ignore"),
+        """If a commit message contains this text, the commit is ignored; "koan:ignore" by default"""
       )
 
     private def prefixed(key: String) = "koan" + key.capitalize
@@ -35,14 +41,16 @@ object SbtKoan extends Plugin {
   override def settings: Seq[Setting[_]] =
     List(
       Keys.commands += koanCommand,
-      KoanKeys.initialState := "Initial state"
+      KoanKeys.initial := "koan:initial",
+      KoanKeys.ignore := "koan:ignore"
     )
 
   private def koanCommand = {
     Command("koan")(parser) { (state, koanOpt) =>
       val baseDirectory = setting(Keys.baseDirectory, state)
-      val initialState = setting(KoanKeys.initialState, state)
-      Koan.Action(baseDirectory, initialState, state)(koanOpt)
+      val initial = setting(KoanKeys.initial, state)
+      val ignore = setting(KoanKeys.ignore, state)
+      Koan.Action(baseDirectory, initial, ignore, state)(koanOpt)
     }
   }
 
