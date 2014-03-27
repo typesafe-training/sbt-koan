@@ -7,14 +7,14 @@ sbt-koan is a plugin for [sbt](http://www.scala-sbt.org). Intended for training 
 
 First you need to install sbt, please refer to the [sbt documentation](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html). Make sure that you are using a suitable version of sbt:
 
-- sbt-koan 1.1 → sbt 0.13
+- sbt-koan 1.2 → sbt 0.13
 
 Just add the below setting to the plugin definition to your project, paying attention to blank lines between settings:
 
 ```
 // Potentially some other settings
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-koan" % "1.1.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-koan" % "1.2.0")
 ```
 
 Start sbt or – if it was already started – `reload` the current session. Then you should have the `koan` command available.
