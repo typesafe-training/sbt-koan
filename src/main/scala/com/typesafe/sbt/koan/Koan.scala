@@ -25,11 +25,13 @@ private object Koan {
   val buildDefinition = """.+sbt|project/.+\.scala""".r
 
   object Action {
-    def apply(baseDirectory: File, initial: String, ignore: String, state: State) =
-      new Action(baseDirectory, initial, ignore, state)
+    def apply(baseDirectory: File, testDirectory: File, initial: String, ignore: String, state: State) =
+      new Action(baseDirectory, testDirectory, initial, ignore, state)
   }
 
-  class Action(baseDirectory: File, initial: String, ignore: String, state: State) {
+  class Action(baseDirectory: File, testDirectory: File, initial: String, ignore: String, state: State) {
+
+    val testPath = resolve(baseDirectory, testDirectory) getOrElse sys.error(s"Fatal: Test directory '$testDirectory' not subdirectory of '$baseDirectory'!")
 
     val git = Git(baseDirectory)
 
@@ -64,9 +66,9 @@ private object Koan {
           state.log.warn(s"Already arrived at $end!")
           state
         case _ +: other +: _ =>
-          git.checkoutPaths(other, "src/test")
-          git.deletedOrRenamed(other, current, "src/test") foreach FileUtils.forceDelete
-          git.reset("src/test")
+          git.checkoutPaths(other, testPath)
+          git.deletedOrRenamed(other, current, testPath) foreach FileUtils.forceDelete
+          git.reset(testPath)
           saveCurrent(other)
           state.log.info(s"Moved to $otherQualifier koan '${koanMessages(other)}'")
           state

@@ -16,11 +16,10 @@
 
 package com.typesafe.sbt
 
-import java.io.File
-import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.revwalk.RevCommit
-import sbt.{ BuildStructure, Extracted, Project, SettingKey, State, ThisProject }
-import scala.annotation.tailrec
+import java.io.File
+import sbt.{ BuildStructure, Configuration, Extracted, Project, SettingKey, State, ThisProject }
+import org.apache.commons.io.FilenameUtils
 
 package object koan {
 
@@ -37,11 +36,37 @@ package object koan {
       (commit abbreviate 7).name
   }
 
+  val FileSeparator: String =
+    System.getProperty("file.separator", "/")
+
   def fst[A, B](pair: (A, B)): A =
     pair._1
 
+  def resolve(parent: File, child: File): Option[String] = {
+    def elements(file: File) = {
+      val path =
+        FilenameUtils.separatorsToUnix(file.getCanonicalPath) match {
+          case s if s startsWith FileSeparator => s substring 1
+          case s                               => s
+        }
+      path split FileSeparator toList
+    }
+    val parentElements = elements(parent)
+    val childElements = elements(child)
+    if (childElements startsWith parentElements)
+      childElements drop parentElements.size match {
+        case Nil      => None
+        case elements => Some(elements mkString FileSeparator)
+      }
+    else
+      None
+  }
+
   def setting[A](key: SettingKey[A], state: State) =
     key in ThisProject get structure(state).data getOrElse sys.error(s"Fatal: sbt setting '$key' undefined!")
+
+  def setting[A](key: SettingKey[A], config: Configuration, state: State) =
+    key in (ThisProject, config) get structure(state).data getOrElse sys.error(s"Fatal: sbt setting '$key' in '$config' undefined!")
 
   def structure(state: State): BuildStructure =
     extracted(state).structure
