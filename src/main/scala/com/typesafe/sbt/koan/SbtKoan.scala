@@ -16,7 +16,7 @@
 
 package com.typesafe.sbt.koan
 
-import sbt.{ Command, Keys, Plugin, Setting, SettingKey, State }
+import sbt.{ Command, Configurations, Keys, Plugin, Setting, SettingKey, State }
 import sbt.complete.Parser
 
 object SbtKoan extends Plugin {
@@ -48,9 +48,10 @@ object SbtKoan extends Plugin {
   private def koanCommand = {
     Command("koan")(parser) { (state, koanOpt) =>
       val baseDirectory = setting(Keys.baseDirectory, state)
+      val testDirectory = setting(Keys.sourceDirectory, Configurations.Test, state)
       val initial = setting(KoanKeys.initial, state)
       val ignore = setting(KoanKeys.ignore, state)
-      Koan.Action(baseDirectory, initial, ignore, state)(koanOpt)
+      Koan.Action(baseDirectory, testDirectory, initial, ignore, state)(koanOpt)
     }
   }
 
