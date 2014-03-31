@@ -36,9 +36,6 @@ package object koan {
       (commit abbreviate 7).name
   }
 
-  val FileSeparator: String =
-    System.getProperty("file.separator", "/")
-
   def fst[A, B](pair: (A, B)): A =
     pair._1
 
@@ -46,17 +43,17 @@ package object koan {
     def elements(file: File) = {
       val path =
         FilenameUtils.separatorsToUnix(file.getCanonicalPath) match {
-          case s if s startsWith FileSeparator => s substring 1
-          case s                               => s
+          case s if s startsWith "/" => s substring 1
+          case s                     => s
         }
-      path split FileSeparator toList
+      path split "/" toList
     }
     val parentElements = elements(parent)
     val childElements = elements(child)
     if (childElements startsWith parentElements)
       childElements drop parentElements.size match {
         case Nil      => None
-        case elements => Some(elements mkString FileSeparator)
+        case elements => Some(elements mkString "/")
       }
     else
       None

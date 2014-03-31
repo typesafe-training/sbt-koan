@@ -22,8 +22,6 @@ import sbt.State
 
 private object Koan {
 
-  val buildDefinition = """.+sbt|project/.+\.scala""".r
-
   object Action {
     def apply(baseDirectory: File, testDirectory: File, initial: String, ignore: String, state: State) =
       new Action(baseDirectory, testDirectory, initial, ignore, state)
