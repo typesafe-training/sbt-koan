@@ -20,6 +20,16 @@ package object sbtkoan {
 
   type IndexedSeq[+A] = scala.collection.immutable.IndexedSeq[A]
 
+  implicit class StringOps(val s: String) extends AnyVal {
+    def decapitalize: String = {
+      if (s == null)
+        null
+      else if (s.isEmpty)
+        s
+      else
+        s.head.toLower +: s.tail
+    }
+  }
   implicit class RevCommitOps(commit: RevCommit) {
     def shortId: String =
       (commit abbreviate 7).name

@@ -4,12 +4,12 @@
 
 package com.typesafe.training.sbtkoan
 
-import sbt.{ Command, Configuration, Configurations, Keys, Plugin, Setting, SettingKey, State }
+import sbt.{ AutoPlugin, Command, Configuration, Configurations, Keys, Setting, SettingKey, State }
 import sbt.complete.Parser
 
-object SbtKoan extends Plugin {
+object SbtKoan extends AutoPlugin {
 
-  object KoanKey {
+  object autoImport {
 
     val configurations: SettingKey[Set[Configuration]] =
       SettingKey[Set[Configuration]](
@@ -38,13 +38,13 @@ object SbtKoan extends Plugin {
     private def prefixed(key: String) = "koan" + key.capitalize
   }
 
-  override def settings: Seq[Setting[_]] =
+  override def projectSettings: Seq[Setting[_]] =
     List(
       Keys.commands += koanCommand,
-      KoanKey.configurations := Set(Configurations.Test),
-      KoanKey.historyRef := "koan",
-      KoanKey.initial := "koan:initial",
-      KoanKey.ignore := "koan:ignore"
+      autoImport.configurations := Set(Configurations.Test),
+      autoImport.historyRef := "koan",
+      autoImport.initial := "koan:initial",
+      autoImport.ignore := "koan:ignore"
     )
 
   private def koanCommand =
@@ -54,7 +54,7 @@ object SbtKoan extends Plugin {
     import KoanArg._
     import sbt.complete.DefaultParsers._
     def arg(koanArg: KoanArg): Parser[KoanArg] = {
-      (Space ~> koanArg.toString.toLowerCase) map (_ => koanArg)
+      (Space ~> koanArg.toString.decapitalize) map (_ => koanArg)
     }
     arg(Show) | arg(Next) | arg(Prev) | arg(Solutions)
   }

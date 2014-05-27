@@ -4,7 +4,7 @@
 
 package com.typesafe.training.sbtkoan
 
-import SbtKoan.KoanKey
+import SbtKoan.autoImport
 import java.io.{ IOException, File, FileInputStream, FileOutputStream }
 import org.apache.commons.io.FileUtils
 import sbt.{ Keys, State }
@@ -18,13 +18,13 @@ private class Koan(state: State, koanArg: KoanArg) {
 
   val baseDirectory = setting(Keys.baseDirectory, state)
 
-  val testDirectories = setting(KoanKey.configurations, state) map (c => setting(Keys.sourceDirectory, c, state))
+  val testDirectories = setting(autoImport.configurations, state) map (c => setting(Keys.sourceDirectory, c, state))
 
-  val historyRef = setting(KoanKey.historyRef, state)
+  val historyRef = setting(autoImport.historyRef, state)
 
-  val initial = setting(KoanKey.initial, state)
+  val initial = setting(autoImport.initial, state)
 
-  val ignore = setting(KoanKey.ignore, state)
+  val ignore = setting(autoImport.ignore, state)
 
   val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
 
