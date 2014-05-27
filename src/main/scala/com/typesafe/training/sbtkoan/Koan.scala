@@ -79,7 +79,7 @@ private class Koan(state: State, koanArg: KoanArg) {
   }
 
   def solutions(): State = {
-    git.fetch("origin", tag)
+    git.fetch("origin", s"$tag-solutions")
     git.resetHard(s"origin/$tag-solutions")
     state.log.info(s"Wrote solutions into workspace")
     state
