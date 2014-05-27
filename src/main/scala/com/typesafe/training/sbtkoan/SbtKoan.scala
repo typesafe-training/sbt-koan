@@ -53,9 +53,9 @@ object SbtKoan extends Plugin {
   private def parser(state: State) = {
     import KoanArg._
     import sbt.complete.DefaultParsers._
-    def opt(koanArg: KoanArg): Parser[KoanArg] = {
+    def arg(koanArg: KoanArg): Parser[KoanArg] = {
       (Space ~> koanArg.toString.toLowerCase) map (_ => koanArg)
     }
-    opt(Show) | opt(Next) | opt(Prev) | opt(Solutions)
+    arg(Show) | arg(Next) | arg(Prev) | arg(Solutions)
   }
 }

@@ -51,10 +51,10 @@ package object sbtkoan {
       None
   }
 
-  def setting[A](key: SettingKey[A], state: State) =
+  def setting[A](key: SettingKey[A], state: State): A =
     key in ThisProject get structure(state).data getOrElse sys.error(s"Fatal: sbt setting '$key' undefined!")
 
-  def setting[A](key: SettingKey[A], config: Configuration, state: State) =
+  def setting[A](key: SettingKey[A], config: Configuration, state: State): A =
     key in (ThisProject, config) get structure(state).data getOrElse sys.error(s"Fatal: sbt setting '$key' in '$config' undefined!")
 
   def structure(state: State): BuildStructure =
