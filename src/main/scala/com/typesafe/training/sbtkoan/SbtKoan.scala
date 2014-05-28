@@ -59,6 +59,6 @@ object SbtKoan extends AutoPlugin {
     def arg(koanArg: KoanArg): Parser[KoanArg] = {
       (Space ~> koanArg.toString.decapitalize) map (_ => koanArg)
     }
-    arg(Show) | arg(Next) | arg(Prev) | arg(Solutions)
+    arg(Show) | arg(Next) | arg(Prev) | arg(PullSolutions)
   }
 }

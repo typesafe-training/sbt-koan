@@ -14,5 +14,5 @@ private object KoanArg {
 
   case object Prev extends KoanArg
 
-  case object Solutions extends KoanArg
+  case object PullSolutions extends KoanArg
 }

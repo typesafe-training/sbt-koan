@@ -45,10 +45,10 @@ private class Koan(state: State, koanArg: KoanArg) {
   def apply(): State = {
     import KoanArg._
     koanArg match {
-      case Show      => show()
-      case Next      => move(forward = true)
-      case Prev      => move(forward = false)
-      case Solutions => solutions()
+      case Show          => show()
+      case Next          => move(forward = true)
+      case Prev          => move(forward = false)
+      case PullSolutions => pullSolutions()
     }
   }
 
@@ -78,10 +78,10 @@ private class Koan(state: State, koanArg: KoanArg) {
     }
   }
 
-  def solutions(): State = {
+  def pullSolutions(): State = {
     git.fetch("origin", s"$tag-solutions")
     git.resetHard(s"origin/$tag-solutions")
-    state.log.info(s"Wrote solutions into workspace")
+    state.log.info(s"Pulled solutions into workspace")
     state
   }
 
