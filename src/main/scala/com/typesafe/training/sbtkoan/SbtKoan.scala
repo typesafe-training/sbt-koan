@@ -4,7 +4,7 @@
 
 package com.typesafe.training.sbtkoan
 
-import sbt.{ AutoPlugin, Command, Configuration, Configurations, Keys, Setting, SettingKey, State }
+import sbt.{ AutoPlugin, Command, Configuration, Configurations, Keys, PluginTrigger, Setting, SettingKey, State }
 import sbt.complete.Parser
 
 object SbtKoan extends AutoPlugin {
@@ -46,6 +46,9 @@ object SbtKoan extends AutoPlugin {
       autoImport.initial := "koan:initial",
       autoImport.ignore := "koan:ignore"
     )
+
+  override def trigger: PluginTrigger =
+    allRequirements
 
   private def koanCommand =
     Command("koan")(parser)(Koan.apply)
