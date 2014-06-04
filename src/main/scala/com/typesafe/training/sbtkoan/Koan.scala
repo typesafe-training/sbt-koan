@@ -7,6 +7,7 @@ package com.typesafe.training.sbtkoan
 import SbtKoan.autoImport
 import java.io.{ IOException, File, FileInputStream, FileOutputStream }
 import org.apache.commons.io.FileUtils
+import org.eclipse.jgit.api.errors.GitAPIException
 import sbt.{ Keys, State }
 
 private object Koan {
@@ -79,9 +80,13 @@ private class Koan(state: State, koanArg: KoanArg) {
   }
 
   def pullSolutions(): State = {
-    git.fetch("origin", s"$tag-solutions")
-    git.resetHard(s"origin/$tag-solutions")
-    state.log.info(s"Pulled solutions into workspace")
+    try {
+      git.fetch("origin", s"$tag-solutions")
+      git.resetHard(s"origin/$tag-solutions")
+      state.log.info(s"Pulled solutions into workspace")
+    } catch {
+      case e: GitAPIException => state.log.error(s"Can't pull solutions: ${e.getMessage}")
+    }
     state
   }
 
