@@ -4,32 +4,43 @@
 
 package com.typesafe.training.sbtkoan
 
-import com.typesafe.training.sbtkoan.SbtKoan.autoImport
+import SbtKoan.autoImport
 import java.io.{ File, FileInputStream, FileOutputStream, IOException }
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.errors.GitAPIException
-import sbt.{ Keys, State }
+import sbt.{ Configuration, Keys, Project, State }
 
 private object Koan {
+
   def apply(state: State, koanArg: KoanArg): State =
     new Koan(state, koanArg).apply()
+
+  def allSourceDirectories(config: Configuration, state: State): Seq[String] = {
+    val buildDirectory = Project.extract(state).get(Keys.baseDirectory)
+    Project.extract(state).structure.allProjectRefs.toList.map { ref =>
+      val sourceDirectory = Project.extract(state).get(Keys.sourceDirectory in config in ref)
+      relativize(buildDirectory, sourceDirectory)
+    }
+  }
 }
 
 private class Koan(state: State, koanArg: KoanArg) {
 
-  val baseDirectory = setting(Keys.baseDirectory, state)
+  import Koan._
 
-  val testDirectories = setting(autoImport.configurations, state).map(c => setting(Keys.sourceDirectory, c, state))
+  val baseDirectory = Project.extract(state).get(Keys.baseDirectory)
 
-  val historyRef = setting(autoImport.historyRef, state)
+  val testDirectories = Project.extract(state).get(autoImport.configurations).flatMap(c => allSourceDirectories(c, state))
 
-  val initial = setting(autoImport.initial, state)
+  val historyRef = Project.extract(state).get(autoImport.historyRef)
 
-  val ignore = setting(autoImport.ignore, state)
+  val initial = Project.extract(state).get(autoImport.initial)
+
+  val ignore = Project.extract(state).get(autoImport.ignore)
 
   val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
 
-  val testPath :: testPaths = testDirectories.toList.flatMap(resolve(baseDirectory))
+  val testPath :: testPaths = testDirectories.toList
 
   val git = Git(baseDirectory)
 

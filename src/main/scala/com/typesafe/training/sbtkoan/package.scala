@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.charset.Charset
 import org.apache.commons.io.FilenameUtils
 import org.eclipse.jgit.revwalk.RevCommit
-import sbt.{ BuildStructure, Configuration, Extracted, Project, SettingKey, State, ThisProject }
+import sbt.{ BuildStructure, Configuration, Extracted, Project, SettingKey, State }
 
 package object sbtkoan {
 
@@ -30,6 +30,7 @@ package object sbtkoan {
         s.head.toLower +: s.tail
     }
   }
+
   implicit class RevCommitOps(commit: RevCommit) {
     def shortId: String =
       commit.abbreviate(7).name
@@ -41,7 +42,7 @@ package object sbtkoan {
   def fst[A, B](pair: (A, B)): A =
     pair._1
 
-  def resolve(parent: File)(child: File): Option[String] = {
+  def relativize(parent: File, child: File): String = {
     def elements(file: File) = {
       val path =
         FilenameUtils.separatorsToUnix(file.getCanonicalPath) match {
@@ -54,22 +55,10 @@ package object sbtkoan {
     val childElements = elements(child)
     if (childElements.startsWith(parentElements))
       childElements.drop(parentElements.size) match {
-        case Nil      => None
-        case elements => Some(elements.mkString("/"))
+        case Nil      => throw new IllegalArgumentException(s"$child is not a child of $parent!")
+        case elements => elements.mkString("/")
       }
     else
-      None
+      throw new IllegalArgumentException(s"$child is not a child of $parent!")
   }
-
-  def setting[A](key: SettingKey[A], state: State): A =
-    key.in(extracted(state).currentRef).get(structure(state).data).getOrElse(sys.error(s"$key undefined!"))
-
-  def setting[A](key: SettingKey[A], config: Configuration, state: State): A =
-    key.in(extracted(state).currentRef, config).get(structure(state).data).getOrElse(sys.error(s"Fatal: sbt setting '$key' in '$config' undefined!"))
-
-  def structure(state: State): BuildStructure =
-    extracted(state).structure
-
-  def extracted(state: State): Extracted =
-    Project.extract(state)
 }

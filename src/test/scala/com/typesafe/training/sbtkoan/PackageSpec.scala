@@ -5,20 +5,21 @@
 package com.typesafe.training.sbtkoan
 
 import java.io.File
+import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.{ Matchers, WordSpec }
 
-class PackageSpec extends WordSpec with Matchers {
+class PackageSpec extends WordSpec with Matchers with TypeCheckedTripleEquals {
 
-  "Calling resolve" should {
-    "return Some with the relative path for a file contained in a parent directory" in {
-      resolve(new File("/a/b"))(new File("/a/b/c")) shouldEqual Some("c")
-      resolve(new File("/a/b"))(new File("/a/b/c/d")) shouldEqual Some("c/d")
-      resolve(new File("/a/b/"))(new File("/a/b/c/")) shouldEqual Some("c")
+  "Calling relativize" should {
+    "return the relative path for a file contained in a parent directory" in {
+      relativize(new File("/a/b"), new File("/a/b/c")) should ===("c")
+      relativize(new File("/a/b"), new File("/a/b/c/d")) should ===("c/d")
+      relativize(new File("/a/b/"), new File("/a/b/c/")) should ===("c")
     }
-    "return None for a file not contained in a parent directory" in {
-      resolve(new File("/a/b"))(new File("/a")) shouldEqual None
-      resolve(new File("/a/b"))(new File("/a/b")) shouldEqual None
-      resolve(new File("/a/b"))(new File("/a/c")) shouldEqual None
+    "fail for a file not contained in a parent directory" in {
+      an[IllegalArgumentException] should be thrownBy relativize(new File("/a/b"), new File("/a"))
+      an[IllegalArgumentException] should be thrownBy relativize(new File("/a/b"), new File("/a/b"))
+      an[IllegalArgumentException] should be thrownBy relativize(new File("/a/b"), new File("/a/c"))
     }
   }
 }
