@@ -5,7 +5,7 @@
 package com.typesafe.training.sbtkoan
 
 import sbt.{ AutoPlugin, Command, Configuration, Configurations, Keys, PluginTrigger, Setting, SettingKey, State }
-import sbt.complete.Parser
+import sbt.complete.{ DefaultParsers, Parser }
 
 object SbtKoan extends AutoPlugin {
 
@@ -35,7 +35,7 @@ object SbtKoan extends AutoPlugin {
         """The ref (commit id, branch or tag) used for the Git history; "koan" by default"""
       )
 
-    private def prefixed(key: String) = "koan" + key.capitalize
+    private def prefixed(key: String) = s"koan${key.capitalize}"
   }
 
   override def projectSettings: Seq[Setting[_]] =
@@ -54,10 +54,10 @@ object SbtKoan extends AutoPlugin {
     Command("koan")(parser)(Koan.apply)
 
   private def parser(state: State) = {
+    import DefaultParsers._
     import KoanArg._
-    import sbt.complete.DefaultParsers._
     def arg(koanArg: KoanArg): Parser[KoanArg] = {
-      (Space ~> koanArg.toString.decapitalize) map (_ => koanArg)
+      (Space ~> koanArg.toString.decapitalize).map(_ => koanArg)
     }
     arg(Show) | arg(Next) | arg(Prev) | arg(PullSolutions)
   }

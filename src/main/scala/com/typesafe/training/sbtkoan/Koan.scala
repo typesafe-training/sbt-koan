@@ -4,22 +4,22 @@
 
 package com.typesafe.training.sbtkoan
 
-import SbtKoan.autoImport
-import java.io.{ IOException, File, FileInputStream, FileOutputStream }
+import com.typesafe.training.sbtkoan.SbtKoan.autoImport
+import java.io.{ File, FileInputStream, FileOutputStream, IOException }
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.errors.GitAPIException
 import sbt.{ Keys, State }
 
 private object Koan {
   def apply(state: State, koanArg: KoanArg): State =
-    new Koan(state, koanArg)()
+    new Koan(state, koanArg).apply()
 }
 
 private class Koan(state: State, koanArg: KoanArg) {
 
   val baseDirectory = setting(Keys.baseDirectory, state)
 
-  val testDirectories = setting(autoImport.configurations, state) map (c => setting(Keys.sourceDirectory, c, state))
+  val testDirectories = setting(autoImport.configurations, state).map(c => setting(Keys.sourceDirectory, c, state))
 
   val historyRef = setting(autoImport.historyRef, state)
 
@@ -29,19 +29,19 @@ private class Koan(state: State, koanArg: KoanArg) {
 
   val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
 
-  val testPath :: testPaths = testDirectories.toList flatMap resolve(baseDirectory)
+  val testPath :: testPaths = testDirectories.toList.flatMap(resolve(baseDirectory))
 
   val git = Git(baseDirectory)
 
   val (koans, koanMessages) = {
-    val koans = git.history(historyRef).reverse dropWhile { case (_, message) => !(message contains initial) }
+    val koans = git.history(historyRef).reverse.dropWhile { case (_, message) => !(message contains initial) }
     if (koans.isEmpty)
       sys.error(s"Fatal: Initial state not in Git history, i.e. no commit contains '$initial'!")
     else
-      (koans map fst, koans.toMap)
+      (koans.map(fst), koans.toMap)
   }
 
-  val current = findCurrent() getOrElse koans.head
+  val current = findCurrent().getOrElse(koans.head)
 
   def apply(): State = {
     import KoanArg._
@@ -59,19 +59,27 @@ private class Koan(state: State, koanArg: KoanArg) {
   }
 
   def move(forward: Boolean): State = {
-    val otherQualifier = if (forward) "next" else "previous"
-    (if (forward) koans else koans.reverse) dropWhile (_ != current) filterNot (koanMessages(_) contains ignore) match {
+    val (otherQualifier, theseKoans) =
+      if (forward)
+        ("next", koans)
+      else
+        ("previous", koans.reverse)
+    theseKoans.dropWhile(_ != current).filterNot(koanMessages(_).contains(ignore)) match {
       case Nil =>
         state.log.error(s"Can't move to $otherQualifier koan, because invalid current id '$current'!")
         state.log.error(s"Hint: Try to delete ${koanProperties.getCanonicalPath} and preferably run `git clean -df`")
         state.fail
       case _ +: Nil =>
-        val end = if (forward) "last koan" else "initial state"
+        val end =
+          if (forward)
+            "last koan"
+          else
+            "initial state"
         state.log.warn(s"Already arrived at $end!")
         state
       case _ +: other +: _ =>
         git.checkoutPaths(other, testPath, testPaths: _*)
-        git.deletedOrRenamed(other, current, testPath, testPaths: _*) foreach FileUtils.forceDelete
+        git.deletedOrRenamed(other, current, testPath, testPaths: _*).foreach(FileUtils.forceDelete)
         git.reset(testPath, testPaths: _*)
         saveCurrent(other)
         state.log.info(s"Moved to $otherQualifier koan '${koanMessages(other)}'")
@@ -108,7 +116,8 @@ private class Koan(state: State, koanArg: KoanArg) {
     val out = new FileOutputStream(koanProperties)
     try {
       properties.store(out, null)
-    } finally out.close()
+    } finally
+      out.close()
   }
 
   def koanProperties: File =

@@ -32,7 +32,7 @@ package object sbtkoan {
   }
   implicit class RevCommitOps(commit: RevCommit) {
     def shortId: String =
-      (commit abbreviate 7).name
+      commit.abbreviate(7).name
   }
 
   val utf8: Charset =
@@ -45,31 +45,31 @@ package object sbtkoan {
     def elements(file: File) = {
       val path =
         FilenameUtils.separatorsToUnix(file.getCanonicalPath) match {
-          case s if s startsWith "/" => s substring 1
-          case s                     => s
+          case s if s.startsWith("/") => s.substring(1)
+          case s                      => s
         }
-      path split "/" toList
+      path.split("/").toList
     }
     val parentElements = elements(parent)
     val childElements = elements(child)
-    if (childElements startsWith parentElements)
-      childElements drop parentElements.size match {
+    if (childElements.startsWith(parentElements))
+      childElements.drop(parentElements.size) match {
         case Nil      => None
-        case elements => Some(elements mkString "/")
+        case elements => Some(elements.mkString("/"))
       }
     else
       None
   }
 
   def setting[A](key: SettingKey[A], state: State): A =
-    key in ThisProject get structure(state).data getOrElse sys.error(s"Fatal: sbt setting '$key' undefined!")
+    key.in(extracted(state).currentRef).get(structure(state).data).getOrElse(sys.error(s"$key undefined!"))
 
   def setting[A](key: SettingKey[A], config: Configuration, state: State): A =
-    key in (ThisProject, config) get structure(state).data getOrElse sys.error(s"Fatal: sbt setting '$key' in '$config' undefined!")
+    key.in(extracted(state).currentRef, config).get(structure(state).data).getOrElse(sys.error(s"Fatal: sbt setting '$key' in '$config' undefined!"))
 
   def structure(state: State): BuildStructure =
     extracted(state).structure
 
   def extracted(state: State): Extracted =
-    Project extract state
+    Project.extract(state)
 }
