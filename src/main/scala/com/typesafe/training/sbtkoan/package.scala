@@ -8,7 +8,6 @@ import java.io.File
 import java.nio.charset.Charset
 import org.apache.commons.io.FilenameUtils
 import org.eclipse.jgit.revwalk.RevCommit
-import sbt.{ BuildStructure, Configuration, Extracted, Project, SettingKey, State }
 
 package object sbtkoan {
 
