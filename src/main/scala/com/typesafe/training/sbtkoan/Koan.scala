@@ -36,7 +36,9 @@ private class Koan(state: State, koanArg: KoanArg) {
 
   val initial = Project.extract(state).get(autoImport.initial)
 
-  val ignore = Project.extract(state).get(autoImport.ignore)
+  val ignoreCommit = Project.extract(state).get(autoImport.ignoreCommit)
+
+  val ignoreFiles = Project.extract(state).get(autoImport.ignoreFiles)
 
   val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
 
@@ -70,14 +72,14 @@ private class Koan(state: State, koanArg: KoanArg) {
   }
 
   def move(forward: Boolean): State = {
-    val (otherQualifier, theseKoans) =
+    val (nextOrPrevious, theseKoans) =
       if (forward)
         ("next", koans)
       else
         ("previous", koans.reverse)
-    theseKoans.dropWhile(_ != current).filterNot(koanMessages(_).contains(ignore)) match {
+    theseKoans.dropWhile(_ != current).filterNot(koanMessages(_).contains(ignoreCommit)) match {
       case Nil =>
-        state.log.error(s"Can't move to $otherQualifier koan, because invalid current id '$current'!")
+        state.log.error(s"Can't move to $nextOrPrevious koan, because invalid current id '$current'!")
         state.log.error(s"Hint: Try to delete ${koanProperties.getCanonicalPath} and preferably run `git clean -df`")
         state.fail
       case _ +: Nil =>
@@ -91,9 +93,15 @@ private class Koan(state: State, koanArg: KoanArg) {
       case _ +: other +: _ =>
         git.checkoutPaths(other, testPath, testPaths: _*)
         git.deletedOrRenamed(other, current, testPath, testPaths: _*).foreach(FileUtils.forceDelete)
+        val allTestPaths = testPath +: testPaths
+        for (ignoreFile <- ignoreFiles; if allTestPaths.exists(ignoreFile.startsWith)) {
+          val file = new File(baseDirectory, ignoreFile)
+          if (file.exists())
+            file.delete()
+        }
         git.reset(testPath, testPaths: _*)
         saveCurrent(other)
-        state.log.info(s"Moved to $otherQualifier koan '${koanMessages(other)}'")
+        state.log.info(s"Moved to $nextOrPrevious koan '${koanMessages(other)}'")
         state
     }
   }
