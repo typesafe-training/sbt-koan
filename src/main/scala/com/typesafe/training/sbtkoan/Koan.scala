@@ -40,11 +40,11 @@ private class Koan(state: State, koanArg: KoanArg) {
 
   val ignoreFiles = Project.extract(state).get(autoImport.ignoreFiles)
 
-  val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
-
   val testPath :: testPaths = testDirectories.toList
 
   val git = Git(baseDirectory)
+
+  val koanProperties = new File(baseDirectory, ".koan.properties")
 
   val (koans, koanMessages) = {
     val koans = git.history(historyRef).reverse.dropWhile { case (_, message) => !(message contains initial) }
@@ -108,11 +108,13 @@ private class Koan(state: State, koanArg: KoanArg) {
 
   def pullSolutions(): State = {
     try {
+      val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
       git.fetch("origin", s"$tag-solutions")
       git.resetHard(s"origin/$tag-solutions")
       state.log.info(s"Pulled solutions into workspace")
     } catch {
-      case e: GitAPIException => state.log.error(s"Can't pull solutions: ${e.getMessage}")
+      case e: IOException     => state.log.error(s"Can't pull solutions, because .tag file can't be read: ${e.getMessage}")
+      case e: GitAPIException => state.log.error(s"Can't pull solutions, because of Git error: ${e.getMessage}")
     }
     state
   }
@@ -133,12 +135,9 @@ private class Koan(state: State, koanArg: KoanArg) {
     val properties = new java.util.Properties
     properties.setProperty("current", current)
     val out = new FileOutputStream(koanProperties)
-    try {
+    try
       properties.store(out, null)
-    } finally
+    finally
       out.close()
   }
-
-  def koanProperties: File =
-    new File(baseDirectory, ".koan.properties")
 }
