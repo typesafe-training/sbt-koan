@@ -7,6 +7,8 @@ package com.typesafe.training.sbtkoan
 import sbt.{ AutoPlugin, Command, Configuration, Configurations, Keys, PluginTrigger, Setting, SettingKey, State }
 import sbt.complete.{ DefaultParsers, Parser }
 
+import scala.reflect._
+
 object SbtKoan extends AutoPlugin {
 
   object autoImport {
@@ -38,7 +40,7 @@ object SbtKoan extends AutoPlugin {
     val ignoreFiles: SettingKey[Set[String]] =
       SettingKey[Set[String]](
         prefixed("ignorePaths"),
-        "If a file has one of these paths relative to the project root directory, it is ignored; Set.emtpy by default"
+        "If a file has one of these paths relative to the project root directory, it is ignored; Set.empty by default"
       )
 
     private def prefixed(key: String) = s"koan${key.capitalize}"
@@ -65,6 +67,11 @@ object SbtKoan extends AutoPlugin {
     import KoanArg._
     def arg(koanArg: KoanArg): Parser[KoanArg] =
       (Space ~> koanArg.toString.decapitalize).map(_ => koanArg)
-    arg(Show) | arg(Next) | arg(Prev) | arg(PullSolutions)
+    def stringOpt[A <: KoanArg: ClassTag](ctor: String => A): Parser[A] = {
+      val name = classTag[A].runtimeClass.getSimpleName
+      (Space ~> name.decapitalize ~> "=" ~> NotQuoted).map(ctor)
+    }
+
+    arg(Show) | arg(Next) | arg(Prev) | stringOpt(Pull)
   }
 }

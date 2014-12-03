@@ -59,10 +59,10 @@ private class Koan(state: State, koanArg: KoanArg) {
   def apply(): State = {
     import KoanArg._
     koanArg match {
-      case Show          => show()
-      case Next          => move(forward = true)
-      case Prev          => move(forward = false)
-      case PullSolutions => pullSolutions()
+      case Show         => show()
+      case Next         => move(forward = true)
+      case Prev         => move(forward = false)
+      case Pull(branch) => pull(branch)
     }
   }
 
@@ -106,14 +106,12 @@ private class Koan(state: State, koanArg: KoanArg) {
     }
   }
 
-  def pullSolutions(): State = {
+  def pull(branch: String): State = {
     try {
-      val tag = FileUtils.readFileToString(new File(baseDirectory, ".tag"), utf8).trim
-      git.fetch("origin", s"$tag-solutions")
-      git.resetHard(s"origin/$tag-solutions")
+      git.fetch("origin", s"$branch")
+      git.resetHard(s"origin/$branch")
       state.log.info(s"Pulled solutions into workspace")
     } catch {
-      case e: IOException     => state.log.error(s"Can't pull solutions, because .tag file can't be read: ${e.getMessage}")
       case e: GitAPIException => state.log.error(s"Can't pull solutions, because of Git error: ${e.getMessage}")
     }
     state
