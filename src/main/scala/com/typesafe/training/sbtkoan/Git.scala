@@ -49,7 +49,7 @@ class Git(repository: Repository) {
         parser.reset(reader, tree.getId)
         parser
       } finally
-        reader.release()
+        reader.close()
     }
     def matches(entry: DiffEntry) = {
       val allPaths = path +: paths.toList
