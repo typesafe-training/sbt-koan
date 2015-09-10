@@ -2,7 +2,7 @@ import sbt._
 
 object Version {
   val commonsIO = "2.4"
-  val jGit      = "3.4.1.201406201815-r"
+  val jGit      = "4.0.1.201506240215-r"
   val scala     = "2.10.4"
   val scalaTest = "2.2.2"
 }
